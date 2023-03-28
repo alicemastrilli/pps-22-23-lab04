@@ -3,11 +3,13 @@ import List.*
 trait Item {
   def code: Int
   def name: String
-  def tags: List[String]
+  def tags: Seq[String]
 }
 
 object Item:
-  def apply(code: Int, name: String, tags: List[String] = List.empty): Item = ???
+  def apply(code: Int, name: String, tags: String*): Item =
+    ItemImpl(code, name, tags)
+  private case class ItemImpl(code: Int, name: String, tags: Seq[String]) extends Item
 
 /**
  * A warehouse is a place where items are stored.
@@ -44,27 +46,40 @@ trait Warehouse {
 }
 
 object Warehouse {
-  def apply(): Warehouse = ???
+  def apply(): Warehouse = WarehouseImpl()
+  private case class WarehouseImpl() extends Warehouse:
+    private var list = empty[Item]
+    def store(item: Item): Unit =
+      list = append(list, Cons(item, empty))
+
+    def searchItems(tag: String): List[Item] =
+      filter(list)(a => a.tags.contains(tag))
+    def retrieve(code: Int): Option[Item] =
+      find(list)(a => a.code.equals(code))
+    def remove(item: Item): Unit =
+      list = filter(list)(a => !a.equals(item))
+    def contains(itemCode: Int): Boolean =
+      !Option.isEmpty(find(list)(a => a.code.equals(itemCode)))
 }
 
 @main def mainWarehouse(): Unit =
   val warehouse = Warehouse()
 
-  val dellXps = Item(33, "Dell XPS 15", cons("notebook", empty))
-  val dellInspiron = Item(34, "Dell Inspiron 13", cons("notebook", empty))
-  val xiaomiMoped = Item(35, "Xiaomi S1", cons("moped", cons("mobility", empty)))
+  val dellXps = Item(33, "Dell XPS 15", "notebook")
+  val dellInspiron = Item(34, "Dell Inspiron 13", "notebook")
+  val xiaomiMoped = Item(35, "Xiaomi S1", "moped", "mobility")
 
-  warehouse.contains(dellXps.code) // false
+  println(warehouse.contains(dellXps.code)) // false
   warehouse.store(dellXps) // side effect, add dell xps to the warehouse
-  warehouse.contains(dellXps.code) // true
+  println(warehouse.contains(dellXps.code)) // true
   warehouse.store(dellInspiron) // side effect, add dell inspiron to the warehouse
   warehouse.store(xiaomiMoped) // side effect, add xiaomi moped to the warehouse
-  warehouse.searchItems("mobility") // List(xiaomiMoped)
-  warehouse.searchItems("notebook") // List(dellXps, dellInspiron)
-  warehouse.retrieve(11) // None
-  warehouse.retrieve(dellXps.code) // Some(dellXps)
+  println(warehouse.searchItems("mobility")) // List(xiaomiMoped)
+  println(warehouse.searchItems("notebook")) // List(dellXps, dellInspiron)
+  println(warehouse.retrieve(11)) // None
+  println(warehouse.retrieve(dellXps.code)) // Some(dellXps)
   warehouse.remove(dellXps) // side effect, remove dell xps from the warehouse
-  warehouse.retrieve(dellXps.code) // None
+  println(warehouse.retrieve(dellXps.code)) // None
 
 /** Hints:
  * - Implement the Item with a simple case class
