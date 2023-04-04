@@ -51,7 +51,6 @@ object Warehouse {
     private var list = empty[Item]
     def store(item: Item): Unit =
       list = append(list, Cons(item, empty))
-
     def searchItems(tag: String): List[Item] =
       filter(list)(a => a.tags.contains(tag))
     def retrieve(code: Int): Option[Item] =
