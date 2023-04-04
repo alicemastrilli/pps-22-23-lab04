@@ -14,7 +14,7 @@ class LogicsImpl(private val size: Int, private val mines: Int) extends Logics:
   private val seed = 42
   private val random = new Random(seed)
   private var minesSet = Cons(Pair(random.nextInt(size), random.nextInt(size)), Nil())
-  private var selected = Cons(Pair(-1, -1), Nil())
+  private var selected = Nil[Pair[Int, Int]]()
   putMines()
 
   private def putMines(): Unit =
@@ -28,11 +28,9 @@ class LogicsImpl(private val size: Int, private val mines: Int) extends Logics:
   def hit(x: Int, y: Int): java.util.Optional[Integer] =
     if (contains(minesSet, Pair(x,y)))
       return OptionToOptional(Option.None())
-    if (selected.equals(Cons(Pair(-1, -1), Nil())))
-      selected = Cons(Pair(x,y), Nil())
     else
       selected = append(selected, Cons(Pair(x,y), Nil()) )
     OptionToOptional(Some(neighbours(x,y))) // Option => Optional converter
 
   def won =
-    (length(selected) + length(minesSet)) == (size * size)
+    (length(selected) + length(minesSet)).equals(size * size)
